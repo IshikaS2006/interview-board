@@ -6,7 +6,7 @@ export const config = {
   },
 
   app: {
-    name: 'ShadowDraw',
+    name: 'InterviewBoard',
     version: '1.0.0',
     environment: import.meta.env.MODE || 'development',
   },

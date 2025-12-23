@@ -83,11 +83,11 @@ export default function Canvas({ onLeaveRoom, initialRoomData }) {
     };
 
     const render = () => {
-      // Get revealed student strokes if admin
+      // Admin sees ALL student strokes automatically (like IDE)
       let revealedStrokes = [];
-      if (state.isAdminRef.current && state.revealedStudents.size > 0) {
-        state.revealedStudents.forEach(studentId => {
-          const studentStrokes = state.allPrivateStrokes[studentId] || [];
+      if (state.isAdminRef.current && state.allPrivateStrokes) {
+        // Show all students' private strokes to admin in real-time
+        Object.values(state.allPrivateStrokes).forEach(studentStrokes => {
           revealedStrokes = [...revealedStrokes, ...studentStrokes];
         });
       }
@@ -758,12 +758,6 @@ export default function Canvas({ onLeaveRoom, initialRoomData }) {
     setZoomLevel(100);
   }, [state.camera]);
 
-  const handleRequestPromote = useCallback(() => {
-    if (!state.isAdmin && state.privateStrokes.length > 0) {
-      socket.emit('request-promote');
-    }
-  }, [state.isAdmin, state.privateStrokes]);
-
   const handleSaveAsPNG = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -948,7 +942,6 @@ export default function Canvas({ onLeaveRoom, initialRoomData }) {
         privateStrokes={state.privateStrokes}
         allPrivateStrokes={state.allPrivateStrokes}
         promoteRequests={state.promoteRequests}
-        onRequestPromote={handleRequestPromote}
         onTogglePromotionPanel={() => state.setShowPromotionPanel(!state.showPromotionPanel)}
         showPromotionPanel={state.showPromotionPanel}
         onSaveAsPNG={handleSaveAsPNG}
@@ -1139,36 +1132,7 @@ export default function Canvas({ onLeaveRoom, initialRoomData }) {
 
       {/* Top Right - Role Info & Panel Toggle */}
       <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-        {/* Role Info & Status */}
-        <div className={`px-3 py-2 rounded-lg shadow-lg ${
-          isDark ? 'bg-[#1e1e1e] border border-gray-700 text-gray-300' : 'bg-white border border-gray-200 text-gray-700'
-        }`}>
-          <div className="text-xs space-y-1">
-            {state.isAdmin ? (
-              <>
-                <div className="flex items-center gap-1.5">
-                  <span>Strokes are</span>
-                  <span className="font-semibold text-green-500">visible to all</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>Code is</span>
-                  <span className="font-semibold text-green-500">visible to all</span>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-1.5">
-                  <span>Strokes are</span>
-                  <span className="font-semibold text-blue-500">private</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>Code is</span>
-                  <span className="font-semibold text-blue-500">private</span>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        
         
         {/* Code Panel Toggle Button */}
         <button
@@ -1236,15 +1200,10 @@ export default function Canvas({ onLeaveRoom, initialRoomData }) {
             <div className={`px-4 py-3 border-b ${
               isDark ? 'border-gray-700 bg-[#252525]' : 'border-gray-200 bg-gray-50'
             }`}>
-              <label className={`text-xs font-semibold mb-2 block ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Viewing Code:
-              </label>
               <select
                 value={state.viewingUserId || 'me'}
                 onChange={(e) => state.setViewingUserId(e.target.value === 'me' ? null : e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-auto px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   isDark 
                     ? 'bg-[#1e1e1e] border border-gray-600 text-gray-300' 
                     : 'bg-white border border-gray-300 text-gray-700'

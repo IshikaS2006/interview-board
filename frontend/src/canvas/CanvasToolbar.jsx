@@ -13,7 +13,6 @@ export default function CanvasToolbar({
   privateStrokes,
   allPrivateStrokes,
   promoteRequests,
-  onRequestPromote,
   onTogglePromotionPanel,
   showPromotionPanel,
   onSaveAsPNG,
@@ -165,21 +164,7 @@ export default function CanvasToolbar({
           <span>Save</span>
         </button>
 
-        {/* Student/Teacher Actions */}
-        {!isAdmin && privateStrokes.length > 0 && (
-          <button
-            onClick={onRequestPromote}
-            className={`px-4 h-10 flex items-center gap-2 rounded-lg font-medium text-sm transition-all ${
-              isDark 
-                ? 'bg-green-600 text-white hover:bg-green-700' 
-                : 'bg-green-500 text-white hover:bg-green-600'
-            }`}
-            title="Ask to share"
-          >
-            <span>Share</span>
-          </button>
-        )}
-
+        {/* Admin Student Panel */}
         {isAdmin && Object.keys(allPrivateStrokes).length > 0 && (
           <button
             onClick={onTogglePromotionPanel}
@@ -188,13 +173,9 @@ export default function CanvasToolbar({
                 ? 'bg-[#5e5ce6] text-white hover:bg-[#4d4bdb]' 
                 : 'bg-blue-500 text-white hover:bg-blue-600'
             }`}
-            title="Student work"
+            title="View student work"
           >
-            <span>Students</span>
-            {promoteRequests.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-3 h-3 flex items-center justify-center">
-              </span>
-            )}
+            <span>View Students</span>
           </button>
         )}
 
@@ -205,8 +186,8 @@ export default function CanvasToolbar({
         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
           isDark ? 'bg-[#1e1e1e] text-gray-300' : 'bg-gray-100 text-gray-700'
         }`}>
-          <span>{isAdmin ? '👑' : '👤'}</span>
-          <span>{userCount}</span>
+          <img src="/pngs/image.png" alt="User" className="w-5 h-5 object-contain" />
+          <span className="font-medium">{userCount}</span>
         </div>
 
         {/* Leave Room */}
@@ -237,7 +218,6 @@ CanvasToolbar.propTypes = {
   privateStrokes: PropTypes.array.isRequired,
   allPrivateStrokes: PropTypes.object.isRequired,
   promoteRequests: PropTypes.array.isRequired,
-  onRequestPromote: PropTypes.func.isRequired,
   onTogglePromotionPanel: PropTypes.func.isRequired,
   showPromotionPanel: PropTypes.bool.isRequired,
   onSaveAsPNG: PropTypes.func.isRequired,

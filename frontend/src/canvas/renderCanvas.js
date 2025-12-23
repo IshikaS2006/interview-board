@@ -185,9 +185,9 @@ export const renderCanvas = (ctx, canvas, {
     });
   }
 
-  // Revealed student strokes (admin only)
+  // All student strokes visible to admin (like collaborative IDE)
   if (isAdminRef.current && revealedStrokes.length > 0) {
-    ctx.globalAlpha = 0.7; // Make revealed strokes slightly transparent
+    ctx.globalAlpha = 0.6; // Make student strokes slightly transparent to distinguish from public
     revealedStrokes.forEach((stroke) => {
       const isSelected = selectedIds.includes(stroke.id);
       drawStroke(ctx, stroke, isSelected);

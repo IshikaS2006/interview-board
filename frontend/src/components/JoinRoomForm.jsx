@@ -28,7 +28,7 @@ function JoinRoomForm({
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
                 <img 
                   src="/logo/coworking-vector-icon-outline-600w-1807246411.png" 
-                  alt="ShadowDraw Logo" 
+                  alt="InterviewBoard Logo" 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -36,7 +36,7 @@ function JoinRoomForm({
                 <h1 className={`text-2xl font-bold ${
                   isDark ? 'text-white' : 'text-gray-900'
                 }`}>
-                  ShadowDraw
+                  InterviewBoard
                 </h1>
                 <p className={`text-xs ${
                   isDark ? 'text-gray-400' : 'text-gray-500'
@@ -73,10 +73,10 @@ function JoinRoomForm({
             {/* Create Test Room Button */}
             <button
               onClick={createTestRoom}
-              className={`w-full mb-6 px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`w-full mb-6 px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-md hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm ${
                 isDark 
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white' 
-                  : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white'
+                  ? 'bg-gray-800/80 hover:bg-gray-900/90 text-white border border-gray-700/50 hover:border-gray-600' 
+                  : 'bg-gray-800/90 hover:bg-black text-white border border-gray-700/30 hover:border-gray-600'
               }`}
               disabled={!isConnected || isCreatingRoom}
             >
@@ -86,7 +86,7 @@ function JoinRoomForm({
                   Creating Room...
                 </span>
               ) : (
-                '✨ Create Test Room (as Teacher)'
+                '✨ Create Test Room (as Interviewer)'
               )}
             </button>
 
@@ -98,7 +98,7 @@ function JoinRoomForm({
                 <div className="flex items-start gap-3">
                   <span className="text-green-500 text-xl">✓</span>
                   <div>
-                    <p className={`text-sm font-semibold ${
+                    <p className={`text-sm  ${
                       isDark ? 'text-green-400' : 'text-green-700'
                     }`}>
                       Room created successfully!
@@ -106,7 +106,7 @@ function JoinRoomForm({
                     <p className={`text-xs mt-1 ${
                       isDark ? 'text-green-300' : 'text-green-600'
                     }`}>
-                      You are joining as a <strong>Teacher</strong>. Enter your name and click Join Room.
+                      You are joining as an <strong>Interviewer</strong>. Enter your name and click Join Room.
                     </p>
                   </div>
                 </div>
@@ -116,10 +116,11 @@ function JoinRoomForm({
             {/* Join Form */}
             <form onSubmit={handleJoinRoom} className="space-y-5">
               <div>
-                <label className={`flex items-center gap-2 text-sm font-semibold mb-2 ${
+                <label className={`flex items-center gap-2 text-sm  mb-1 ml-1 ${
                   isDark ? 'text-gray-200' : 'text-gray-700'
                 }`}>
-                  <span className="text-lg">🔑</span>
+                  
+
                   Room ID
                 </label>
                 <input
@@ -137,16 +138,15 @@ function JoinRoomForm({
               </div>
 
               <div>
-                <label className={`flex items-center gap-2 text-sm font-semibold mb-2 ${
+                <label className={`flex items-center gap-2 text-sm ml-1 mb-1 ${
                   isDark ? 'text-gray-200' : 'text-gray-700'
                 }`}>
-                  <span className="text-lg">👑</span>
                   Administrator Key
                   {adminKey && (
                     <span className={`text-xs font-normal ${
                       isDark ? 'text-green-400' : 'text-green-600'
                     }`}>
-                      (You are Teacher)
+                      (You are Interviewer)
                     </span>
                   )}
                 </label>
@@ -154,7 +154,7 @@ function JoinRoomForm({
                   type="text"
                   value={adminKey}
                   onChange={(e) => setAdminKey(e.target.value)}
-                  placeholder="Leave empty for student, or paste admin key"
+                  placeholder="Leave empty for interviewee, or paste admin key"
                   className={`w-full px-2 py-1 rounded-lg focus:outline-none transition ${
                     adminKey 
                       ? isDark 
@@ -169,10 +169,9 @@ function JoinRoomForm({
               </div>
 
               <div>
-                <label className={`flex items-center gap-2 text-sm font-semibold mb-2 ${
+                <label className={`flex items-center gap-2 text-sm ml-1 mb-1 ${
                   isDark ? 'text-gray-200' : 'text-gray-700'
                 }`}>
-                  <span className="text-lg">👤</span>
                   Your Name
                 </label>
                 <input

@@ -25,7 +25,7 @@ export default function StudentWorkPanel({
         <div className="flex items-center justify-between">
           <h3 className={`font-semibold text-sm ${
             isDark ? 'text-gray-200' : 'text-gray-800'
-          }`}>Student Work</h3>
+          }`}>Interviewee Work (All Visible)</h3>
           <button
             onClick={onClose}
             className={`w-7 h-7 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center justify-center text-sm ${
@@ -35,6 +35,11 @@ export default function StudentWorkPanel({
             ✕
           </button>
         </div>
+        <p className={`text-xs mt-1 ${
+          isDark ? 'text-gray-400' : 'text-gray-500'
+        }`}>
+          You can see all interviewee work in real-time
+        </p>
       </div>
       
       {/* Panel Content */}
@@ -63,8 +68,8 @@ export default function StudentWorkPanel({
                     <div className={`flex items-center gap-1.5 mt-2 px-2 py-1 rounded text-xs ${
                       isDark ? 'bg-green-900/40 text-green-400' : 'bg-green-50 text-green-700'
                     }`}>
-                      <span>🙋</span>
-                      <span className="font-medium">Wants to share</span>
+                      <span>✓</span>
+                      <span className="font-medium">{strokes.length} stroke{strokes.length !== 1 ? 's' : ''}</span>
                     </div>
                   )}
                 </div>
@@ -92,7 +97,7 @@ export default function StudentWorkPanel({
                         : 'bg-green-500 hover:bg-green-600 text-white'
                     }`}
                   >
-                    Show to All
+                    Make Public
                   </button>
                 </div>
               </div>
@@ -106,7 +111,7 @@ export default function StudentWorkPanel({
             }`}>📝</div>
             <p className={`text-sm ${
               isDark ? 'text-gray-500' : 'text-gray-500'
-            }`}>No student work yet</p>
+            }`}>No interviewee work yet</p>
           </div>
         )}
       </div>

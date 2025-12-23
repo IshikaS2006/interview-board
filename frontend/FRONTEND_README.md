@@ -1,4 +1,4 @@
-# ShadowDraw Frontend
+# InterviewBoard Frontend
 
 A modern, collaborative drawing application built with React and Vite. This frontend provides a real-time whiteboard experience for online interviews and collaborative sessions.
 

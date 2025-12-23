@@ -1,0 +1,2 @@
+1. add logo
+2. maintain github nicely

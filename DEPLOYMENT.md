@@ -1,4 +1,4 @@
-# Deployment Guide - ShadowDraw
+# Deployment Guide - InterviewBoard
 
 ## Prerequisites
 - GitHub account
