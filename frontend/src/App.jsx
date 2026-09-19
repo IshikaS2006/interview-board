@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import JoinRoomForm from './components/JoinRoomForm';
@@ -17,48 +17,26 @@ function App() {
   const [userId, setUserId] = useState('');
   const [error, setError] = useState('');
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [roomJustCreated, setRoomJustCreated] = useState(false);
   const [roomData, setRoomData] = useState(null);
 
-  // Restore session from localStorage on mount
+  // Refs to always hold latest values inside socket callbacks without re-registering
+  const userIdRef = useRef(userId);
+  const adminKeyRef = useRef(adminKey);
+  useEffect(() => { userIdRef.current = userId; }, [userId]);
+  useEffect(() => { adminKeyRef.current = adminKey; }, [adminKey]);
+
+  // Restore session fields from localStorage on mount (pre-fill form only)
   useEffect(() => {
     const savedSession = localStorage.getItem('scribble-session');
     if (savedSession) {
       try {
         const session = JSON.parse(savedSession);
         if (session.roomId && session.userId) {
-          console.log('Restoring session from localStorage:', session);
+          console.info('Pre-filling form from saved session:', session);
           setRoomId(session.roomId);
           setUserId(session.userId);
           setAdminKey(session.adminKey || '');
-          
-          // Set initial room data for Canvas
-          setRoomData({
-            roomId: session.roomId,
-            userId: session.userId,
-            isAdmin: !!session.adminKey
-          });
-          
-          setHasJoinedRoom(true); // Show canvas immediately
-          
-          // Auto-rejoin room
-          const joinData = {
-            roomId: session.roomId,
-            userId: session.userId,
-          };
-          if (session.adminKey) {
-            joinData.adminKey = session.adminKey;
-          }
-          
-          // Wait for socket connection before rejoining
-          if (socket.connected) {
-            socket.emit('joinRoom', joinData);
-          } else {
-            const handleReconnect = () => {
-              socket.emit('joinRoom', joinData);
-              socket.off('connect', handleReconnect);
-            };
-            socket.on('connect', handleReconnect);
-          }
         }
       } catch (err) {
         console.error('Failed to restore session:', err);
@@ -84,23 +62,23 @@ function App() {
     };
 
     const handleJoinAck = ({ roomId: joinedRoomId, isAdmin }) => {
-      console.log('App: Join ACK received, isAdmin:', isAdmin);
+      console.info('App: Join ACK received, isAdmin:', isAdmin);
       setRoomData({ roomId: joinedRoomId, isAdmin });
       setHasJoinedRoom(true);
       setError('');
-      
-      // Save session to localStorage
+
+      // Use refs so we always capture the latest values without re-registering
       const session = {
         roomId: joinedRoomId,
-        userId,
-        adminKey: adminKey || undefined
+        userId: userIdRef.current,
+        adminKey: adminKeyRef.current || undefined
       };
       localStorage.setItem('scribble-session', JSON.stringify(session));
-      console.log('Session saved to localStorage');
+      console.info('Session saved to localStorage');
     };
 
     const handleRoomJoined = (data) => {
-      console.log('App: Room joined full data:', data);
+      console.info('App: Room joined full data:', data);
       setRoomData(data);
     };
 
@@ -123,7 +101,7 @@ function App() {
       socket.off('room-joined', handleRoomJoined);
       socket.off('error', handleError);
     };
-  }, [userId, adminKey]);
+  }, []);
 
   const handleJoinRoom = useCallback((e) => {
     e.preventDefault();
@@ -141,25 +119,22 @@ function App() {
 
     if (adminKey.trim()) {
       joinData.adminKey = adminKey.trim();
-      console.log('Joining as ADMIN with adminKey:', adminKey.trim());
+      console.info('Joining as ADMIN with adminKey:', adminKey.trim());
     } else {
-      console.log('Joining as STUDENT (no admin key)');
+      console.info('Joining as STUDENT (no admin key)');
     }
 
-    console.log('Emitting joinRoom with data:', joinData);
+    console.info('Emitting joinRoom with data:', joinData);
     socket.emit('joinRoom', joinData);
     
-    // Save to localStorage for persistence
-    const session = {
-      roomId: joinData.roomId,
-      userId: joinData.userId,
-      adminKey: joinData.adminKey || undefined
-    };
-    localStorage.setItem('scribble-session', JSON.stringify(session));
   }, [roomId, userId, adminKey]);
 
   const createTestRoom = useCallback(async () => {
     setError('');
+  // Reset any previously created room before creating a new one
+    setRoomId('');
+    setAdminKey('');
+    setRoomJustCreated(false);
     setIsCreatingRoom(true);
 
     try {
@@ -171,16 +146,22 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create room');
+        let serverMsg = 'Failed to create room';
+        try {
+          const errBody = await response.json();
+          if (errBody?.message) serverMsg = errBody.message;
+        } catch { /* ignore parse errors */ }
+        throw new Error(serverMsg);
       }
 
       const data = await response.json();
-      
+
       if (data.roomId && data.adminKey) {
         setRoomId(data.roomId);
         setAdminKey(data.adminKey);
+        setRoomJustCreated(true);
         setError('');
-        console.log('Room created successfully:', {
+        console.info('Room created successfully:', {
           roomId: data.roomId,
           adminKey: data.adminKey
         });
@@ -196,15 +177,19 @@ function App() {
 
   const handleLeaveRoom = useCallback(() => {
     socket.emit('leaveRoom');
+    // Disconnect and reconnect so the socket gets a clean state for next join
+    socket.disconnect();
+    socket.connect();
     setHasJoinedRoom(false);
     setRoomId('');
     setAdminKey('');
     setUserId('');
     setRoomData(null);
-    
+    setRoomJustCreated(false);
+
     // Clear session from localStorage
     localStorage.removeItem('scribble-session');
-    console.log('Session cleared from localStorage');
+    console.info('Session cleared from localStorage');
   }, []);
 
   if (!hasJoinedRoom) {
@@ -225,6 +210,7 @@ function App() {
             handleJoinRoom={handleJoinRoom}
             createTestRoom={createTestRoom}
             isCreatingRoom={isCreatingRoom}
+            roomJustCreated={roomJustCreated}
           />
         </div>
       </ErrorBoundary>

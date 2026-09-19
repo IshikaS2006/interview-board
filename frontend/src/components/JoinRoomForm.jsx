@@ -12,13 +12,14 @@ function JoinRoomForm({
   setUserId, 
   handleJoinRoom, 
   createTestRoom,
-  isCreatingRoom
+  isCreatingRoom,
+  roomJustCreated
 }) {
   const { isDark } = useTheme();
 
   return (
     <div className={`min-h-screen flex items-center justify-center `}>
-      <div className={`w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden '}`}>
+      <div className={`w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="flex flex-col lg:flex-row">
           {/* Left Side - Form */}
           <div className="flex-1 p-8 lg:p-12">
@@ -90,8 +91,8 @@ function JoinRoomForm({
               )}
             </button>
 
-            {/* Success message */}
-            {adminKey && roomId && (
+            {/* Success message — only show when room was just created this session */}
+            {roomJustCreated && adminKey && roomId && (
               <div className={`mb-6 p-4 rounded-lg ${
                 isDark ? 'bg-green-500/10 border border-green-500/20' : 'bg-green-50 border border-green-200'
               }`}>
@@ -164,7 +165,7 @@ function JoinRoomForm({
                         ? 'bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500'
                         : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500'
                   }`}
-                  readOnly={!!adminKey}
+
                 />
               </div>
 
@@ -243,12 +244,14 @@ JoinRoomForm.propTypes = {
   handleJoinRoom: PropTypes.func.isRequired,
   createTestRoom: PropTypes.func.isRequired,
   isCreatingRoom: PropTypes.bool,
+  roomJustCreated: PropTypes.bool,
 };
 
 JoinRoomForm.defaultProps = {
   error: null,
   adminKey: '',
   isCreatingRoom: false,
+  roomJustCreated: false,
 };
 
 export default JoinRoomForm;
