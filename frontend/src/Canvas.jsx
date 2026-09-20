@@ -674,6 +674,165 @@ export default function Canvas({ onLeaveRoom, initialRoomData }) {
     window.addEventListener("resize", resize);
     window.addEventListener("keydown", onKeyDown);
 
+    // ── Touch support ──────────────────────────────────────────────
+    let lastTouchDist = null; // for pinch zoom
+
+    const getTouchPos = (touch) => {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+      };
+    };
+
+    const onTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        // Pinch start — measure initial distance
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+        return;
+      }
+      e.preventDefault();
+      const touch = e.touches[0];
+      const { x: mx, y: my } = getTouchPos(touch);
+      const world = screenToWorld(mx, my);
+
+      state.isDrawing.current = true;
+
+      if (state.selectedTool === 'freehand') {
+        const newStroke = {
+          id: `stroke-${Date.now()}-${Math.random()}`,
+          type: 'freehand',
+          points: [{ x: world.x, y: world.y }],
+          color: state.selectedColor,
+          width: state.selectedWidth,
+        };
+        state.setCurrentStroke(newStroke);
+      } else if (state.selectedTool !== 'select') {
+        const newShape = {
+          id: `stroke-${Date.now()}-${Math.random()}`,
+          type: state.selectedTool,
+          startX: world.x,
+          startY: world.y,
+          endX: world.x,
+          endY: world.y,
+          color: state.selectedColor,
+          width: state.selectedWidth,
+        };
+        state.setShapePreview(newShape);
+      } else {
+        // select tool — pan with one finger
+        state.isPanning.current = true;
+        state.lastPanPos.current = { x: touch.clientX, y: touch.clientY };
+      }
+    };
+
+    const onTouchMove = (e) => {
+      if (e.touches.length === 2) {
+        // Pinch zoom
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (lastTouchDist !== null) {
+          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          const rect = canvas.getBoundingClientRect();
+          const mx = midX - rect.left;
+          const my = midY - rect.top;
+          const before = screenToWorld(mx, my);
+          const scale = dist / lastTouchDist;
+          const newZoom = Math.min(10, Math.max(0.1, state.camera.current.zoom * scale));
+          state.camera.current.zoom = newZoom;
+          state.camera.current.x = before.x - mx / newZoom;
+          state.camera.current.y = before.y - my / newZoom;
+          setZoomLevel(Math.round(newZoom * 100));
+          render();
+        }
+        lastTouchDist = dist;
+        return;
+      }
+      e.preventDefault();
+      lastTouchDist = null;
+      const touch = e.touches[0];
+      const { x: mx, y: my } = getTouchPos(touch);
+      const world = screenToWorld(mx, my);
+
+      if (state.isPanning.current) {
+        const dx = touch.clientX - state.lastPanPos.current.x;
+        const dy = touch.clientY - state.lastPanPos.current.y;
+        state.camera.current.x -= dx / state.camera.current.zoom;
+        state.camera.current.y -= dy / state.camera.current.zoom;
+        state.lastPanPos.current = { x: touch.clientX, y: touch.clientY };
+        render();
+        return;
+      }
+
+      if (!state.isDrawing.current) return;
+
+      if (state.shapePreview) {
+        state.setShapePreview(prev => ({ ...prev, endX: world.x, endY: world.y }));
+        render();
+        return;
+      }
+
+      if (state.currentStroke && state.selectedTool === 'freehand') {
+        const updatedStroke = {
+          ...state.currentStroke,
+          points: [...state.currentStroke.points, { x: world.x, y: world.y }],
+        };
+        state.setCurrentStroke(updatedStroke);
+        socket.emit('live-stroke', {
+          points: updatedStroke.points,
+          type: updatedStroke.type,
+          color: updatedStroke.color,
+          width: updatedStroke.width,
+        });
+        render();
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      lastTouchDist = null;
+      if (state.isPanning.current) {
+        state.isPanning.current = false;
+        return;
+      }
+      if (!state.isDrawing.current) return;
+      state.isDrawing.current = false;
+
+      if (state.shapePreview) {
+        const finalShape = { ...state.shapePreview };
+        if (state.isAdminRef.current) {
+          socket.emit('public-stroke', finalShape);
+          state.setPublicStrokes(prev => [...prev, finalShape]);
+        } else {
+          socket.emit('private-stroke', finalShape);
+          state.setPrivateStrokes(prev => [...prev, finalShape]);
+        }
+        state.setShapePreview(null);
+        return;
+      }
+
+      if (state.currentStroke && state.currentStroke.points.length > 1) {
+        if (state.isAdminRef.current) {
+          socket.emit('public-stroke', state.currentStroke);
+          state.setPublicStrokes(prev => [...prev, state.currentStroke]);
+        } else {
+          socket.emit('private-stroke', state.currentStroke);
+          state.setPrivateStrokes(prev => [...prev, state.currentStroke]);
+        }
+        socket.emit('live-stroke-end');
+      }
+      state.setCurrentStroke(null);
+    };
+    // ── End touch support ──────────────────────────────────────────
+
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.addEventListener("touchend", onTouchEnd);
+
     return () => {
       canvas.removeEventListener("wheel", onWheel);
       canvas.removeEventListener("mousedown", onMouseDown);
@@ -683,6 +842,9 @@ export default function Canvas({ onLeaveRoom, initialRoomData }) {
       canvas.removeEventListener("contextmenu", onContextMenu);
       window.removeEventListener("resize", resize);
       window.removeEventListener("keydown", onKeyDown);
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchmove", onTouchMove);
+      canvas.removeEventListener("touchend", onTouchEnd);
     };
   }, [state, isDark, selectionBounds, resizeHandles, state.revealedStudents, state.allPrivateStrokes]);
 
