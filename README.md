@@ -10,12 +10,12 @@
 
 | Join a Room | Shared Whiteboard |
 |---|---|
-| ![Room join screen](screenshots/room-join.webp) | ![Whiteboard canvas](screenshots/whiteboard.webp) |
+| ![Room join screen](screenshots/room-join.webp) | ![Whiteboard canvas](screenshots/whiteboard.png) |
 | Interviewer gets a Room ID + Administrator Key; candidates join with the Room ID and their name. | Real-time shared canvas for sketching diagrams, system designs, and explanations. |
 
 | Code Editor (Interviewer view) | Switch Between Participants |
 |---|---|
-| ![Read-only code panel](screenshots/code-editor.png) | ![Participant switcher dropdown](screenshots/participant-switch.webp) |
+| ![Read-only code panel](screenshots/code-editor.webp) | ![Participant switcher dropdown](screenshots/participant-switch.webp) |
 | Interviewer views a candidate's code live, in read-only mode. | Dropdown lets the interviewer switch between "Own" and any connected candidate. |
 
 ---
