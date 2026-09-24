@@ -45,15 +45,15 @@ Rooms are protected by an **Administrator Key** so only the interviewer has host
 
 ## 🛠️ Tech Stack
 
-> Update this section with the exact libraries used — assumed based on the app's real-time, multi-cursor behavior.
-
-**Frontend:** React.js, Vite, Tailwind CSS, Canvas/SVG-based whiteboard rendering
-**Real-time sync:** Socket.IO (or an equivalent CRDT library such as Yjs, if used for the whiteboard/code sync)
-**Backend:** Node.js, Express.js
-**Database:** MongoDB Atlas
-**Deployment:** Vercel
-
----
+| Category | Technologies |
+|---|---|
+| **Frontend** | React.js, Vite, Tailwind CSS |
+| **Real-Time Communication** | Socket.IO |
+| **Code Editor Library** | Monaco Editor |
+| **Whiteboard** | Canvas / SVG |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB Atlas |
+| **Deployment** | Vercel |
 
 ## 🏗️ Architecture
 
