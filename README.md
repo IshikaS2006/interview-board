@@ -7,17 +7,17 @@
 ---
 ## 📸 Preview
 
-### Code Editor (Interviewer view)
-
-![Read-only code panel](screenshots/code-editor.webp)
-
-Interviewer views a candidate's code live, in read-only mode.
 
 ### Switch Between Participants
 
 ![Participant switcher dropdown](screenshots/participant-switch.webp)
 
 Dropdown lets the interviewer switch between "Own" and any connected candidate.
+### Code Editor (Interviewer view)
+
+![Read-only code panel](screenshots/code-editor.webp)
+
+Interviewer views a candidate's code live, in read-only mode.
 
 ## 📌 Overview
 
