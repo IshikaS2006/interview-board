@@ -79,7 +79,7 @@ flowchart TD
 ```text
 InterviewBoard/
 │
-├── client/                 # React frontend
+├── frontend/                 # React frontend
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Whiteboard/
@@ -94,7 +94,8 @@ InterviewBoard/
 │   ├── models/             # Room, Participant, CodeSession
 │   ├── controllers/
 │   ├── socket/              # whiteboard + code sync events
-│   └── package.json
+│   ├── package.json
+│   └── ...
 │
 ├── README.md
 └── .gitignore
